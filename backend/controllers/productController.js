@@ -14,6 +14,17 @@ function parseImagesField(value) {
   }
 }
 
+function parseColorsField(value) {
+  if (!value) return [];
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item).trim()).filter(Boolean);
+  }
+  return String(value)
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 /**
  * Removes a single product image, whichever storage it lives in:
  *  - Cloudinary URL (current system) -> deleted via the Cloudinary Admin API.
@@ -83,6 +94,7 @@ exports.createProduct = async (req, res) => {
       discountPrice: Number(req.body.discountPrice || 0),
       description: req.body.description,
       stock: Number(req.body.stock) || 1,
+      colors: parseColorsField(req.body.colors),
       images: uploadedImages,
     });
 
@@ -124,6 +136,7 @@ exports.updateProduct = async (req, res) => {
     product.discountPrice = Number(req.body.discountPrice || 0);
     product.description = req.body.description;
     product.stock = Number(req.body.stock) || 1;
+    product.colors = parseColorsField(req.body.colors);
     product.images = images;
 
     await product.save();

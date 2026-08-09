@@ -243,6 +243,7 @@ async function handleFormSubmit(e) {
   formData.append('price', document.getElementById('price').value);
   formData.append('discountPrice', document.getElementById('discountPrice').value || '0');
   formData.append('stock', document.getElementById('stock').value || '1');
+  formData.append('colors', document.getElementById('colors').value.trim());
   formData.append('description', document.getElementById('description').value.trim());
 
   if (isEditing) {
@@ -301,6 +302,7 @@ async function editProduct(id) {
     document.getElementById('price').value = product.price;
     document.getElementById('discountPrice').value = product.discountPrice || '';
     document.getElementById('stock').value = product.stock;
+    document.getElementById('colors').value = (product.colors || []).join(', ');
     document.getElementById('description').value = product.description;
     pendingUploadFiles = [];
     const fileInput = document.getElementById('images');
@@ -347,6 +349,7 @@ function resetForm() {
   pendingUploadFiles = [];
   document.getElementById('productForm').reset();
   document.getElementById('productId').value = '';
+  document.getElementById('colors').value = '';
   const fileInput = document.getElementById('images');
   fileInput.value = '';
   syncFileInput(fileInput, []);

@@ -45,6 +45,14 @@ const productSchema = new mongoose.Schema(
       default: 1,
       min: [0, 'Stock cannot be negative'],
     },
+    colors: {
+      type: [String],
+      default: [],
+      validate: {
+        validator: (v) => Array.isArray(v),
+        message: 'Colors must be an array of strings',
+      },
+    },
   },
   {
     timestamps: true,

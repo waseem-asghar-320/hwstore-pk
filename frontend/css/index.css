@@ -502,13 +502,13 @@ h2 span,
 .product-price-sale {
   font-size: 1.12rem;
   font-weight: 800;
-  color: var(--red);
+  color: var(--gold);
 }
 
 .product-price-original {
   font-size: 0.9rem;
   font-weight: 600;
-  color: rgba(17, 17, 17, 0.64);
+  color:  var(--red);;
   text-decoration: line-through;
   opacity: 0.9;
 }
@@ -519,7 +519,7 @@ h2 span,
   margin-top: 6px;
   padding: 6px 10px;
   border-radius: 999px;
-  background: rgba(17, 17, 17, 0.06);
+  background: var(--gold);
   color: var(--black);
   font-size: 0.72rem;
   font-weight: 700;
@@ -1321,5 +1321,52 @@ aditional style for slider */
     .hero .container {
       min-height: -webkit-fill-available !important;
     }
+  }
+}
+
+
+
+
+
+
+
+
+
+/* whatsapp button */
+
+
+
+.whatsapp-float {
+  position: fixed;
+  right: 25px;
+  bottom: 25px;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: #25D366;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-size: 34px;
+  z-index: 9999;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+  transition: all 0.25s ease;
+}
+
+.whatsapp-float:hover {
+  transform: scale(1.1);
+  background: #20bd5a;
+  color: #fff;
+}
+
+@media (max-width: 600px) {
+  .whatsapp-float {
+    width: 54px;
+    height: 54px;
+    right: 18px;
+    bottom: 18px;
+    font-size: 31px;
   }
 }

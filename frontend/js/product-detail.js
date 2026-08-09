@@ -1,5 +1,25 @@
 let currentProduct = null;
 let selectedQuantity = 1;
+let selectedColor = '';
+let viewerIntervalId = null;
+
+function getRandomViewerCount() {
+  return Math.floor(Math.random() * 26) + 10; // 10-35
+}
+
+function updateViewerIndicator() {
+  const viewerCountElement = document.getElementById('viewerCount');
+  if (!viewerCountElement) return;
+  viewerCountElement.textContent = getRandomViewerCount();
+}
+
+function startViewerIndicator() {
+  updateViewerIndicator();
+  if (viewerIntervalId) {
+    clearInterval(viewerIntervalId);
+  }
+  viewerIntervalId = setInterval(updateViewerIndicator, 3000);
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   initNavToggle();
@@ -112,11 +132,28 @@ function renderProduct(product) {
         ${images.length > 1 ? `<div class="thumbnail-list">${thumbnails}</div>` : ''}
       </div>
       <div class="product-info">
-        <span class="product-brand">${escapeHtml(product.brand)}</span>
+        <div class="product-meta-row">
+          <span class="product-meta-badge product-brand">${escapeHtml(product.brand)}</span>
+          <span class="product-meta-badge product-category">${escapeHtml(product.category)}</span>
+        </div>
         <h1>${escapeHtml(product.name)}</h1>
-        <span class="product-category">${escapeHtml(product.category)}</span>
-        <p class="product-detail-price">${product.discountPrice && product.discountPrice < product.price ? `<span class="product-sale-price">${formatPrice(product.discountPrice)}</span> <span class="product-original-price">${formatPrice(product.price)}</span>` : formatPrice(product.price)}</p>
         <p class="product-description">${escapeHtml(product.description)}</p>
+        <p class="product-detail-price">${product.discountPrice && product.discountPrice < product.price ? `<span class="product-sale-price">${formatPrice(product.discountPrice)}</span> <span class="product-original-price">${formatPrice(product.price)}</span>` : formatPrice(product.price)}</p>
+        <div class="product-viewers">
+          <i class="fa-solid fa-eye" aria-hidden="true"></i>
+          <span><strong id="viewerCount"></strong> people are viewing this product</span>
+        </div>
+        ${Array.isArray(product.colors) && product.colors.length > 0 ? `
+          <div class="product-color-section">
+            <div class="color-label">Available colors</div>
+            <div class="product-color-options">
+              ${product.colors.map((color) => {
+    const safeColor = escapeHtml(color);
+    return `<button type="button" class="color-chip" data-color="${safeColor}">${safeColor}</button>`;
+  }).join('')}
+            </div>
+          </div>
+        ` : ''}
         <p class="product-stock ${product.stock > 0 ? 'in-stock' : 'out-of-stock'}">
           ${product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
         </p>
@@ -155,10 +192,27 @@ function renderProduct(product) {
   const qtyMinus = document.getElementById('qtyMinus');
   const qtyPlus = document.getElementById('qtyPlus');
   const codBtn = document.getElementById('codBtn');
+  const colorChips = document.querySelectorAll('.color-chip');
 
   if (qtyMinus) qtyMinus.addEventListener('click', () => updateQuantity(-1));
   if (qtyPlus) qtyPlus.addEventListener('click', () => updateQuantity(1));
   if (codBtn) codBtn.addEventListener('click', openOrderModal);
+
+  if (colorChips.length > 0) {
+    colorChips.forEach((chip) => {
+      chip.addEventListener('click', () => {
+        selectedColor = chip.dataset.color || '';
+        colorChips.forEach((button) => button.classList.toggle('selected', button === chip));
+      });
+    });
+    const firstChip = colorChips[0];
+    if (firstChip) {
+      selectedColor = firstChip.dataset.color || '';
+      firstChip.classList.add('selected');
+    }
+  }
+
+  startViewerIndicator();
 }
 
 function updateQuantity(delta) {
@@ -209,6 +263,7 @@ async function handleOrderSubmit(e) {
     customerPhone: document.getElementById('customerPhone').value.trim(),
     customerAddress: document.getElementById('customerAddress').value.trim(),
     quantity: parseInt(document.getElementById('orderQuantity').value, 10),
+    color: selectedColor,
     notes: document.getElementById('orderNotes').value.trim(),
   };
 
@@ -233,6 +288,7 @@ async function handleOrderSubmit(e) {
       <div class="success-details">
         <p><strong>Order ID:</strong> ${order._id}</p>
         <p><strong>Product:</strong> ${escapeHtml(order.productName)}</p>
+        ${order.color ? `<p><strong>Color:</strong> ${escapeHtml(order.color)}</p>` : ''}
         <p><strong>Quantity:</strong> ${order.quantity}</p>
         <p><strong>Total:</strong> ${formatPrice(order.totalPrice)}</p>
         <p><strong>Status:</strong> ${order.orderStatus}</p>

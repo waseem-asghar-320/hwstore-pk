@@ -12,7 +12,7 @@ exports.getAllOrders = async (req, res) => {
 
 exports.createOrder = async (req, res) => {
   try {
-    const { productId, customerName, customerPhone, customerAddress, quantity, notes } = req.body;
+    const { productId, customerName, customerPhone, customerAddress, quantity, notes, color } = req.body;
 
     const product = await Product.findById(productId);
     if (!product) {
@@ -27,7 +27,10 @@ exports.createOrder = async (req, res) => {
       });
     }
 
-    const totalPrice = product.price * orderQuantity;
+    const unitPrice = product.discountPrice && product.discountPrice < product.price
+      ? product.discountPrice
+      : product.price;
+    const totalPrice = unitPrice * orderQuantity;
 
     const order = await Order.create({
       productId: product._id,
@@ -36,6 +39,7 @@ exports.createOrder = async (req, res) => {
       customerPhone,
       customerAddress,
       quantity: orderQuantity,
+      color: color ? String(color).trim() : '',
       totalPrice,
       notes: notes || '',
     });

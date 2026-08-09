@@ -164,6 +164,10 @@ function renderOrders(orders, filter = currentFilter) {
               <span class="detail-label">Quantity</span>
               <span class="detail-value">×${order.quantity}</span>
             </div>
+            ${order.color ? `<div class="product-detail">
+              <span class="detail-label">Color</span>
+              <span class="detail-value">${escapeHtml(order.color)}</span>
+            </div>` : ''}
             <div class="product-detail">
               <span class="detail-label">Total</span>
               <span class="detail-value order-total">${formatPrice(order.totalPrice)}</span>

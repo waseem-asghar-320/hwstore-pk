@@ -32,6 +32,11 @@ const orderSchema = new mongoose.Schema({
     default: 1,
     min: [1, 'Quantity must be at least 1'],
   },
+  color: {
+    type: String,
+    trim: true,
+    default: '',
+  },
   totalPrice: {
     type: Number,
     required: [true, 'Total price is required'],
