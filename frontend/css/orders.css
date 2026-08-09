@@ -895,3 +895,52 @@ h2 span,
     padding: 3px 10px;
   }
 }
+
+
+
+
+
+
+
+
+
+
+/* Status Filter Group */
+.status-filter-group {
+  margin-top: -8px;
+}
+
+.status-filter-group .filter-chip.status-chip {
+  background: transparent;
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.status-filter-group .filter-chip.status-chip.active {
+  background: var(--gold);
+  color: var(--white);
+  border-color: var(--gold);
+}
+
+.status-filter-group .filter-chip.status-chip.active:hover {
+  background: var(--gold-dark);
+}
+
+.status-filter-group .filter-chip.status-chip[data-status="pending"].active {
+  background: #b8860b;
+  border-color: #b8860b;
+}
+
+.status-filter-group .filter-chip.status-chip[data-status="processing"].active {
+  background: #1565c0;
+  border-color: #1565c0;
+}
+
+.status-filter-group .filter-chip.status-chip[data-status="completed"].active {
+  background: #2e7d32;
+  border-color: #2e7d32;
+}
+
+.status-filter-group .filter-chip.status-chip[data-status="canceled"].active {
+  background: #c62828;
+  border-color: #c62828;
+}

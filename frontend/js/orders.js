@@ -1,5 +1,6 @@
 let allOrders = [];
 let currentFilter = 'all';
+let currentStatusFilter = 'all'; // New: status filter
 
 const ORDER_FILTERS = {
   all: { label: 'All Orders', days: null },
@@ -51,7 +52,7 @@ async function fetchOrders() {
     }
 
     allOrders = result.data || [];
-    renderOrders(allOrders, currentFilter);
+    renderOrders(allOrders, currentFilter, currentStatusFilter);
   } catch (error) {
     container.innerHTML = `<p class="error-message">${error.message}</p>`;
     showToast(error.message, 'error');
@@ -60,34 +61,56 @@ async function fetchOrders() {
 
 function setOrderFilter(filter) {
   currentFilter = filter;
-  renderOrders(allOrders, filter);
+  renderOrders(allOrders, filter, currentStatusFilter);
 }
 
-function filterOrders(orders, filter) {
+// New: Set status filter
+function setStatusFilter(status) {
+  currentStatusFilter = status;
+  renderOrders(allOrders, currentFilter, status);
+}
+
+// Modified: Filter orders by both date and status
+function filterOrders(orders, filter, statusFilter) {
+  // First filter by date
   const config = ORDER_FILTERS[filter] || ORDER_FILTERS.all;
-  if (!config.days) {
-    return orders;
+  let filtered = orders;
+  
+  if (config.days) {
+    const threshold = new Date();
+    threshold.setDate(threshold.getDate() - config.days);
+    filtered = filtered.filter((order) => {
+      const orderDate = new Date(order.orderDate);
+      return orderDate >= threshold;
+    });
   }
 
-  const threshold = new Date();
-  threshold.setDate(threshold.getDate() - config.days);
+  // Then filter by status
+  if (statusFilter !== 'all') {
+    filtered = filtered.filter((order) => {
+      if (statusFilter === 'pending') return order.orderStatus === 'Pending';
+      if (statusFilter === 'processing') return order.orderStatus === 'Processing';
+      if (statusFilter === 'completed') return order.orderStatus === 'Delivered' || order.orderStatus === 'Completed';
+      if (statusFilter === 'canceled') return order.orderStatus === 'Cancelled';
+      return true;
+    });
+  }
 
-  return orders.filter((order) => {
-    const orderDate = new Date(order.orderDate);
-    return orderDate >= threshold;
-  });
+  return filtered;
 }
 
 function updateOrderStats(orders) {
   const total = orders.length;
-  const pending = orders.filter(o => o.orderStatus === 'Pending' || o.orderStatus === 'Processing').length;
+  const pending = orders.filter(o => o.orderStatus === 'Pending').length;
+  const processing = orders.filter(o => o.orderStatus === 'Processing').length;
   const completed = orders.filter(o => o.orderStatus === 'Delivered' || o.orderStatus === 'Completed').length;
-
+  const canceled = orders.filter(o => o.orderStatus === 'Cancelled').length;
 
   document.getElementById('totalOrders').textContent = total;
   document.getElementById('pendingOrders').textContent = pending;
+  document.getElementById('processingOrders').textContent = processing;
+  document.getElementById('canceledOrders').textContent = canceled;
   document.getElementById('completedOrders').textContent = completed;
-
 }
 
 function getStatusClass(status) {
@@ -101,9 +124,9 @@ function getStatusClass(status) {
   return map[status] || 'status-pending';
 }
 
-function renderOrders(orders, filter = currentFilter) {
+function renderOrders(orders, filter = currentFilter, statusFilter = currentStatusFilter) {
   const container = document.getElementById('ordersContainer');
-  const filteredOrders = filterOrders(orders, filter);
+  const filteredOrders = filterOrders(orders, filter, statusFilter);
   const summaryConfig = ORDER_FILTERS[filter] || ORDER_FILTERS.all;
   const totalRevenue = filteredOrders.reduce((sum, order) => sum + Number(order.totalPrice || 0), 0);
   const statusOptions = ['Pending', 'Processing', 'Delivered', 'Cancelled'];
@@ -111,7 +134,7 @@ function renderOrders(orders, filter = currentFilter) {
   // Update stats
   updateOrderStats(orders);
 
-  // Filter buttons
+  // Filter buttons (date filters)
   const filterButtons = Object.entries(ORDER_FILTERS)
     .map(([key, config]) => {
       const activeClass = filter === key ? 'active' : '';
@@ -119,10 +142,25 @@ function renderOrders(orders, filter = currentFilter) {
     })
     .join('');
 
+  // Status filter buttons (NEW)
+  const statusFilterButtons = [
+    { key: 'all', label: 'All Status' },
+    { key: 'pending', label: 'Pending' },
+    { key: 'processing', label: 'Processing' },
+    { key: 'completed', label: 'Completed' },
+    { key: 'canceled', label: 'Canceled' }
+  ].map(({ key, label }) => {
+    const activeClass = statusFilter === key ? 'active' : '';
+    return `<button class="filter-chip status-chip ${activeClass}" onclick="setStatusFilter('${key}')">${label}</button>`;
+  }).join('');
+
   if (filteredOrders.length === 0) {
     container.innerHTML = `
       <div class="filter-group">
         ${filterButtons}
+      </div>
+      <div class="filter-group status-filter-group">
+        ${statusFilterButtons}
         <span class="filter-result">0 orders found</span>
       </div>
       <div class="empty-state">
@@ -211,6 +249,9 @@ function renderOrders(orders, filter = currentFilter) {
   container.innerHTML = `
     <div class="filter-group">
       ${filterButtons}
+    </div>
+    <div class="filter-group status-filter-group">
+      ${statusFilterButtons}
       <span class="filter-result">${filteredOrders.length} orders found</span>
     </div>
 
@@ -268,5 +309,54 @@ async function deleteOrder(orderId) {
     fetchOrders();
   } catch (error) {
     showToast(error.message, 'error');
+  }
+}
+
+// =============================================
+// UTILITY FUNCTIONS
+// =============================================
+
+function formatDate(dateString) {
+  if (!dateString) return 'N/A';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+}
+
+// CHANGED: Currency updated from $ to Rs
+function formatPrice(price) {
+  return `Rs ${Number(price).toFixed(2)}`;
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function showToast(message, type = 'success') {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  
+  requestAnimationFrame(() => toast.classList.add('show'));
+  
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, 4000);
+}
+
+function showLoading(element) {
+  if (element) {
+    element.innerHTML = '<div class="loading-spinner"></div>';
   }
 }
