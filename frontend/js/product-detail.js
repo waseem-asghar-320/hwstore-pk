@@ -166,7 +166,7 @@ function renderProduct(product) {
           </div>
         </div>
         <div class="product-actions">
-          <a href="${getWhatsAppLink(product.name, product.price)}" target="_blank" rel="noopener" class="btn btn-primary">
+          <a href="${getWhatsAppLink(product.name, product.discountPrice && product.discountPrice < product.price ? product.discountPrice : product.price)}" target="_blank" rel="noopener" class="btn btn-primary">
             Buy on WhatsApp
           </a>
           <button class="btn btn-secondary" id="codBtn" ${product.stock <= 0 ? 'disabled' : ''}>
