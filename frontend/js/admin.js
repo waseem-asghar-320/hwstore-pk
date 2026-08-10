@@ -4,10 +4,29 @@ let pendingUploadFiles = [];
 
 document.addEventListener('DOMContentLoaded', () => {
   initNavToggle();
+  initLogout();
   fetchAdminProducts();
   initProductForm();
   initImageUpload();
 });
+
+function initLogout() {
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (!logoutBtn) return;
+
+  logoutBtn.addEventListener('click', async () => {
+    try {
+      await fetch(`${API_BASE_URL}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+    } finally {
+      localStorage.removeItem('adminToken');
+      localStorage.removeItem('adminUser');
+      window.location.href = '/login';
+    }
+  });
+}
 
 function initNavToggle() {
   const toggle = document.querySelector('.nav-toggle');

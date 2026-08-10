@@ -40,6 +40,16 @@
           <p>Enter your credentials to manage the collection.</p>
           <form id="loginForm" method="get" action="/admin.html">
             <div class="form-group">
+              <label for="email">Email</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                placeholder="admin@hwstore.com"
+                required
+              />
+            </div>
+            <div class="form-group">
               <label for="password">Password</label>
               <div class="password-input">
                 <input
@@ -58,10 +68,29 @@
                 </button>
               </div>
             </div>
-            <button type="submit" class="btn btn-primary btn-full">
+            <button
+              type="submit"
+              class="btn btn-primary btn-full"
+              id="loginBtn"
+            >
               Access Panel
             </button>
           </form>
+          <div
+            class="login-extra"
+            id="createAdminSection"
+            style="display: none; margin-top: 1rem; text-align: center"
+          >
+            <p>No admin account exists yet.</p>
+            <a href="signup.html" class="btn btn-secondary btn-full"
+              >Create Admin Account</a
+            >
+          </div>
+          <div
+            id="loginAlert"
+            class="alert"
+            style="display: none; margin-top: 1rem"
+          ></div>
         </div>
       </div>
     </section>
@@ -75,13 +104,21 @@
     </footer>
 
     <script>
+      const API_URL = window.location.origin + "/api/auth";
+      const loginForm = document.getElementById("loginForm");
+      const emailInput = document.getElementById("email");
+      const passwordInput = document.getElementById("password");
+      const loginBtn = document.getElementById("loginBtn");
+      const loginAlert = document.getElementById("loginAlert");
+      const createAdminSection = document.getElementById("createAdminSection");
+
       document.addEventListener("DOMContentLoaded", () => {
-        const passwordInput = document.getElementById("password");
+        const passwordInputField = document.getElementById("password");
         const toggleButton = document.querySelector(".password-toggle");
-        if (passwordInput && toggleButton) {
+        if (passwordInputField && toggleButton) {
           toggleButton.addEventListener("click", () => {
-            const isHidden = passwordInput.type === "password";
-            passwordInput.type = isHidden ? "text" : "password";
+            const isHidden = passwordInputField.type === "password";
+            passwordInputField.type = isHidden ? "text" : "password";
             toggleButton.textContent = isHidden ? "🙈" : "👁";
             toggleButton.setAttribute(
               "aria-label",
@@ -89,7 +126,72 @@
             );
           });
         }
+
+        checkAdminExists();
       });
+
+      function showAlert(message, type = "error") {
+        loginAlert.textContent = message;
+        loginAlert.className = `alert alert-${type}`;
+        loginAlert.style.display = "block";
+        if (type !== "error") {
+          loginAlert.style.borderColor = "var(--gold)";
+          loginAlert.style.background = "rgba(250, 234, 184, 0.2)";
+          loginAlert.style.color = "var(--black)";
+        }
+      }
+
+      async function handleLogin(event) {
+        event.preventDefault();
+        loginAlert.style.display = "none";
+
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+
+        if (!email || !password) {
+          showAlert("Please enter both email and password.");
+          return;
+        }
+
+        loginBtn.disabled = true;
+        loginBtn.textContent = "Signing in...";
+
+        try {
+          const response = await fetch(`${API_URL}/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ email, password }),
+          });
+          const data = await response.json();
+          if (!response.ok) {
+            showAlert(data.message || "Login failed.");
+            return;
+          }
+          window.location.href = "admin.html";
+        } catch (error) {
+          showAlert("Network error. Please try again later.");
+        } finally {
+          loginBtn.disabled = false;
+          loginBtn.textContent = "Access Panel";
+        }
+      }
+
+      async function checkAdminExists() {
+        try {
+          const response = await fetch(`${API_URL}/check-admin`);
+          const data = await response.json();
+          if (!response.exists) {
+            createAdminSection.style.display = "block";
+          } else {
+            createAdminSection.style.display = "none";
+          }
+        } catch (error) {
+          console.error("Check admin error:", error);
+        }
+      }
+
+      loginForm.addEventListener("submit", handleLogin);
     </script>
   </body>
 </html>

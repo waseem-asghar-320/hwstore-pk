@@ -6,6 +6,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const multer = require('multer');
 const fs = require('fs');
+const jwt = require('jsonwebtoken');
 
 console.log('🚀 Initializing watch store backend...');
 
@@ -37,13 +38,29 @@ function createApp() {
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true }));
 
+  // Minimal cookie parser for auth cookies
+  app.use((req, res, next) => {
+    req.cookies = {};
+    const rawCookies = req.headers.cookie;
+    if (rawCookies) {
+      rawCookies.split(';').forEach((cookie) => {
+        const [name, ...value] = cookie.trim().split('=');
+        if (!name) return;
+        req.cookies[name] = decodeURIComponent(value.join('=') || '');
+      });
+    }
+    next();
+  });
+
   app.use('/uploads', express.static(uploadsPath));
 
   try {
     const productRoutes = require('./routes/products');
     const orderRoutes = require('./routes/orders');
+    const authRoutes = require('./routes/auth');
     app.use('/api/products', productRoutes);
     app.use('/api/orders', orderRoutes);
+    app.use('/api/auth', authRoutes);
     console.log('✅ Routes loaded');
   } catch (error) {
     console.error('❌ Error loading routes:', error.message);
@@ -52,33 +69,37 @@ function createApp() {
   const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'HWStore@2026';
   const LEGACY_ADMIN_PASSWORD = 'ChronoVault@2026';
 
-  function requireAdminAccess(req, res, next) {
-    const isAdminRoute = req.path === '/admin' || req.path === '/admin.html' || req.path === '/orders' || req.path === '/orders.html';
-
-    if (!isAdminRoute) {
+  function verifyAdminPageAccess(req, res, next) {
+    const adminRoutes = ['/admin', '/admin.html', '/orders', '/orders.html'];
+    if (!adminRoutes.includes(req.path)) {
       return next();
     }
 
-    const submittedPassword = req.query.password || '';
-    if (submittedPassword === ADMIN_PASSWORD || submittedPassword === LEGACY_ADMIN_PASSWORD) {
-      return next();
+    const token = req.cookies?.adminToken;
+    if (!token) {
+      return res.redirect('/login');
     }
 
-    res.type('html').send(`
-      <html><body style="font-family:Arial,sans-serif; padding:40px; background:#111; color:#fff;">
-        <h2>Admin Access</h2>
-        <p>Enter the password to continue.</p>
-        <form method="get">
-          <input type="password" name="password" placeholder="Password" style="padding:10px; width:220px;" required />
-          <button type="submit" style="padding:10px 14px;">Enter</button>
-        </form>
-      </body></html>
-    `);
+    try {
+      jwt.verify(token, process.env.JWT_SECRET || 'your_secret_key_here');
+      return next();
+    } catch (error) {
+      return res.redirect('/login');
+    }
   }
 
-  app.use(requireAdminAccess);
+  app.use(verifyAdminPageAccess);
 
   app.get('/login', (req, res) => {
+    const token = req.cookies?.adminToken;
+    if (token) {
+      try {
+        jwt.verify(token, process.env.JWT_SECRET || 'your_secret_key_here');
+        return res.redirect('/admin');
+      } catch (error) {
+        // Ignore invalid or expired token and show login page
+      }
+    }
     res.sendFile(path.join(frontendPath, 'login.html'));
   });
 

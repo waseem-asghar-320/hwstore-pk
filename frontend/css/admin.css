@@ -297,6 +297,21 @@ h2 span,
 
 .admin-header {
   margin-bottom: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.admin-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logout-btn {
+  padding: 12px 24px;
+  font-size: 0.8rem;
 }
 
 .admin-header h1 {

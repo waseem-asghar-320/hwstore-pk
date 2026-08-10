@@ -18,7 +18,7 @@ function startViewerIndicator() {
   if (viewerIntervalId) {
     clearInterval(viewerIntervalId);
   }
-  viewerIntervalId = setInterval(updateViewerIndicator, 3000);
+  viewerIntervalId = setInterval(updateViewerIndicator, 5000);
 }
 
 document.addEventListener('DOMContentLoaded', () => {

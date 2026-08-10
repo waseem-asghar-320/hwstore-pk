@@ -238,30 +238,35 @@ h2 {
   color: var(--gray-light);
 }
 
-.password-input {
-  position: relative;
-}
+  .password-input,
+  .password-input-wrapper {
+    position: relative;
+  }
 
-.password-input input {
-  padding-right: 48px;
-}
+  .password-input input,
+  .password-input-wrapper input {
+    width: 100%;
+    padding-right: 48px;
+  }
 
-.password-toggle {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  border: none;
-  background: transparent;
-  color: var(--gray);
-  cursor: pointer;
-  font-size: 1.1rem;
-  padding: 4px;
-}
+  .password-toggle,
+  .password-toggle-confirm {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    color: var(--gray);
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 4px;
+  }
 
-.password-toggle:hover {
-  color: var(--black);
-}
+  .password-toggle:hover,
+  .password-toggle-confirm:hover {
+    color: var(--black);
+  }
 
 /* ----- Buttons ----- */
 .btn {
@@ -335,4 +340,40 @@ h2 {
   .auth-card {
     padding: 24px 18px;
   }
+}
+
+.alert {
+  padding: 14px 18px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  text-align: left;
+  font-size: 0.95rem;
+  margin-top: 1rem;
+}
+
+.alert.alert-info {
+  border-color: rgba(171, 135, 20, 0.4);
+  background: rgba(250, 234, 184, 0.2);
+  color: var(--black);
+}
+
+.alert.alert-success {
+  border-color: rgba(36, 161, 115, 0.4);
+  background: rgba(220, 255, 235, 0.3);
+  color: #084e35;
+}
+
+.alert.alert-error {
+  border-color: rgba(192, 57, 43, 0.4);
+  background: rgba(255, 229, 229, 0.4);
+  color: #7d141c;
+}
+
+.login-extra {
+  margin-top: 32px;
+}
+
+.login-extra .btn {
+  width: 100%;
+  margin-top: 0.75rem;
 }
