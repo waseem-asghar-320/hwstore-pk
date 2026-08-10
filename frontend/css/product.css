@@ -856,7 +856,7 @@ h3 {
   color: #fff;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 600px) {}
   .whatsapp-float {
     width: 54px;
     height: 54px;
