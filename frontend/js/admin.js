@@ -261,6 +261,7 @@ async function handleFormSubmit(e) {
   formData.append('category', document.getElementById('category').value.trim());
   formData.append('price', document.getElementById('price').value);
   formData.append('discountPrice', document.getElementById('discountPrice').value || '0');
+  formData.append('rating', document.getElementById('rating').value || '0');
   formData.append('stock', document.getElementById('stock').value || '1');
   formData.append('colors', document.getElementById('colors').value.trim());
   formData.append('description', document.getElementById('description').value.trim());
@@ -320,6 +321,7 @@ async function editProduct(id) {
     document.getElementById('category').value = product.category;
     document.getElementById('price').value = product.price;
     document.getElementById('discountPrice').value = product.discountPrice || '';
+    document.getElementById('rating').value = product.rating != null ? product.rating : '';
     document.getElementById('stock').value = product.stock;
     document.getElementById('colors').value = (product.colors || []).join(', ');
     document.getElementById('description').value = product.description;
@@ -368,6 +370,7 @@ function resetForm() {
   pendingUploadFiles = [];
   document.getElementById('productForm').reset();
   document.getElementById('productId').value = '';
+  document.getElementById('rating').value = '';
   document.getElementById('colors').value = '';
   const fileInput = document.getElementById('images');
   fileInput.value = '';

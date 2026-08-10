@@ -58,6 +58,29 @@ async function fetchProducts() {
   }
 }
 
+function renderRatingStars(rating) {
+  const score = Math.max(0, Math.min(5, Number(rating) || 0));
+  const fullStars = Math.floor(score);
+  const hasHalf = score - fullStars >= 0.5;
+  const emptyStars = 5 - fullStars - (hasHalf ? 1 : 0);
+  let stars = '';
+  for (let i = 0; i < fullStars; i += 1) {
+    stars += '<i class="fa-solid fa-star"></i>';
+  }
+  if (hasHalf) {
+    stars += '<i class="fa-solid fa-star-half-stroke"></i>';
+  }
+  for (let i = 0; i < emptyStars; i += 1) {
+    stars += '<i class="fa-regular fa-star"></i>';
+  }
+  return `
+      <div class="product-rating">
+        <div class="rating-stars">${stars}</div>
+        <span>${score.toFixed(1)}</span>
+      </div>
+    `;
+}
+
 function renderProducts(products) {
   const grid = document.getElementById('productsGrid');
 
@@ -77,6 +100,7 @@ function renderProducts(products) {
       const priceMarkup = hasSale
         ? `<span class="product-price-sale">${formatPrice(product.discountPrice)}</span><span class="product-price-original">${formatPrice(product.price)}</span>`
         : `<span class="product-price-normal">${formatPrice(product.price)}</span>`;
+      const ratingMarkup = product.rating > 0 ? renderRatingStars(product.rating) : '';
 
       return `
     <article class="product-card" data-id="${productId}" role="button" tabindex="0" aria-label="View ${escapeHtml(product.name)}">
@@ -88,6 +112,7 @@ function renderProducts(products) {
       <div class="product-card-info">
         <span class="product-brand">${escapeHtml(product.brand)}</span>
         <h3 class="product-name">${escapeHtml(product.name)}</h3>
+        ${ratingMarkup}
         <div class="product-price">${priceMarkup}</div>
         ${product.stock <= 0 ? '<span class="product-stock-badge">Out of stock</span>' : ''}
       </div>
@@ -218,7 +243,7 @@ function animateCounter(element) {
 // Hero Slider - Responsive with Desktop & Mobile
 // =============================================
 
-(function() {
+(function () {
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initSlider);
   } else {
@@ -233,7 +258,7 @@ function animateCounter(element) {
     const prevBtn = document.querySelector('.slider-control.prev');
     const nextBtn = document.querySelector('.slider-control.next');
     const heroSection = document.querySelector('.hero');
-    
+
     // Get active slides based on viewport
     function getActiveSlider() {
       const isMobile = window.innerWidth <= 768;
@@ -262,10 +287,10 @@ function animateCounter(element) {
     function changeSlide(index, slidesToUse, indicatorsToUse) {
       const activeSlides = slidesToUse || slides;
       const activeIndicators = indicatorsToUse || indicators;
-      
+
       activeSlides.forEach(slide => slide.classList.remove('active'));
       activeIndicators.forEach(ind => ind.classList.remove('active'));
-      
+
       if (activeSlides[index]) {
         activeSlides[index].classList.add('active');
       }
@@ -319,18 +344,18 @@ function animateCounter(element) {
       const activeSlider = getActiveSlider();
       const newSlides = activeSlider.slides;
       const newIndicators = activeSlider.indicators;
-      
+
       slides = newSlides;
       indicators = newIndicators;
-      
+
       if (newSlides.length > 0 && currentSlide >= newSlides.length) {
         currentSlide = 0;
       }
-      
+
       if (newSlides.length > 0) {
         changeSlide(currentSlide, newSlides, newIndicators);
       }
-      
+
       stopAutoPlay();
       startAutoPlay();
     }
@@ -340,25 +365,25 @@ function animateCounter(element) {
       const activeSlider = getActiveSlider();
       slides = activeSlider.slides;
       indicators = activeSlider.indicators;
-      
+
       if (slides.length === 0) return;
-      
+
       changeSlide(0, slides, indicators);
-      
+
       if (slides.length > 1) {
         startAutoPlay();
       }
 
       // Indicator clicks
       document.querySelectorAll('.indicator').forEach((indicator) => {
-        indicator.addEventListener('click', function() {
+        indicator.addEventListener('click', function () {
           const activeSlider = getActiveSlider();
           const currentIndicators = activeSlider.indicators;
           let slideIndex = -1;
           currentIndicators.forEach((ind, idx) => {
             if (ind === indicator) slideIndex = idx;
           });
-          
+
           if (slideIndex !== -1) {
             stopAutoPlay();
             changeSlide(slideIndex, activeSlider.slides, currentIndicators);
@@ -369,7 +394,7 @@ function animateCounter(element) {
 
       // Prev/Next buttons
       if (prevBtn) {
-        prevBtn.addEventListener('click', function(e) {
+        prevBtn.addEventListener('click', function (e) {
           e.stopPropagation();
           stopAutoPlay();
           prevSlide();
@@ -378,7 +403,7 @@ function animateCounter(element) {
       }
 
       if (nextBtn) {
-        nextBtn.addEventListener('click', function(e) {
+        nextBtn.addEventListener('click', function (e) {
           e.stopPropagation();
           stopAutoPlay();
           nextSlide();
@@ -387,7 +412,7 @@ function animateCounter(element) {
       }
 
       // Keyboard navigation
-      document.addEventListener('keydown', function(e) {
+      document.addEventListener('keydown', function (e) {
         if (!heroSection) return;
         const rect = heroSection.getBoundingClientRect();
         if (rect.top > window.innerHeight || rect.bottom < 0) return;
@@ -416,7 +441,7 @@ function animateCounter(element) {
       }
 
       // Visibility change
-      document.addEventListener('visibilitychange', function() {
+      document.addEventListener('visibilitychange', function () {
         if (document.hidden) {
           stopAutoPlay();
         } else {
@@ -426,7 +451,7 @@ function animateCounter(element) {
 
       // Resize
       let resizeTimeout;
-      window.addEventListener('resize', function() {
+      window.addEventListener('resize', function () {
         clearTimeout(resizeTimeout);
         resizeTimeout = setTimeout(handleResize, 250);
       });
@@ -438,7 +463,7 @@ function animateCounter(element) {
     let imagesToLoad = 0;
     let imagesLoaded = 0;
     const allSlides = document.querySelectorAll('.hero-slide');
-    
+
     allSlides.forEach(slide => {
       const bgImage = slide.style.backgroundImage;
       if (bgImage && bgImage !== 'none') {

@@ -92,6 +92,7 @@ exports.createProduct = async (req, res) => {
       category: req.body.category,
       price: Number(req.body.price),
       discountPrice: Number(req.body.discountPrice || 0),
+      rating: Number(req.body.rating || 0),
       description: req.body.description,
       stock: Number(req.body.stock) || 1,
       colors: parseColorsField(req.body.colors),
@@ -134,6 +135,7 @@ exports.updateProduct = async (req, res) => {
     product.category = req.body.category;
     product.price = Number(req.body.price);
     product.discountPrice = Number(req.body.discountPrice || 0);
+    product.rating = Number(req.body.rating || 0);
     product.description = req.body.description;
     product.stock = Number(req.body.stock) || 1;
     product.colors = parseColorsField(req.body.colors);

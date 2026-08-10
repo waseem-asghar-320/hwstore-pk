@@ -13,6 +13,29 @@ function updateViewerIndicator() {
   viewerCountElement.textContent = getRandomViewerCount();
 }
 
+function renderRatingStars(rating) {
+  const score = Math.max(0, Math.min(5, Number(rating) || 0));
+  const fullStars = Math.floor(score);
+  const hasHalf = score - fullStars >= 0.5;
+  const emptyStars = 5 - fullStars - (hasHalf ? 1 : 0);
+  let stars = '';
+  for (let i = 0; i < fullStars; i += 1) {
+    stars += '<i class="fa-solid fa-star"></i>';
+  }
+  if (hasHalf) {
+    stars += '<i class="fa-solid fa-star-half-stroke"></i>';
+  }
+  for (let i = 0; i < emptyStars; i += 1) {
+    stars += '<i class="fa-regular fa-star"></i>';
+  }
+  return `
+    <div class="product-rating-details">
+      <div class="rating-stars">${stars}</div>
+      <span>${score.toFixed(1)}</span>
+    </div>
+  `;
+}
+
 function startViewerIndicator() {
   updateViewerIndicator();
   if (viewerIntervalId) {
@@ -136,8 +159,11 @@ function renderProduct(product) {
           <span class="product-meta-badge product-brand">${escapeHtml(product.brand)}</span>
           <span class="product-meta-badge product-category">${escapeHtml(product.category)}</span>
         </div>
-        <h1>${escapeHtml(product.name)}</h1>
-        <p class="product-description">${escapeHtml(product.description)}</p>
+        <h1 style="border-bottom: 2px solid currentColor; display: inline-block;">
+  ${escapeHtml(product.name)}
+</h1>
+        <p class="product-description">${escapeHtml(product.description)}</p> <br>
+        ${product.rating > 0 ? renderRatingStars(product.rating) : ''}
         <p class="product-detail-price">${product.discountPrice && product.discountPrice < product.price ? `<span class="product-sale-price">${formatPrice(product.discountPrice)}</span> <span class="product-original-price">${formatPrice(product.price)}</span>` : formatPrice(product.price)}</p>
         <div class="product-viewers">
           <i class="fa-solid fa-eye" aria-hidden="true"></i>
@@ -173,6 +199,7 @@ function renderProduct(product) {
             Place Order (COD)
           </button>
         </div>
+        
       </div>
     </div>
   `;
