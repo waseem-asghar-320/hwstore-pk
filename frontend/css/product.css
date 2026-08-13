@@ -1,5 +1,5 @@
 /* =============================================
-   HW Store — Product Detail Page Styles
+   RW Store — Product Detail Page Styles
    Premium Design System for Product Details
    ============================================= */
 
@@ -740,7 +740,7 @@ h3 {
   .nav-links {
     display: none;
     position: fixed;
-    top: calc(var(--announcement-height) + var(--navbar-height));
+    top: calc( var(--navbar-height));
     right: 0;
     width: min(280px, 100%);
     height: calc(100vh - (var(--announcement-height) + var(--navbar-height)));

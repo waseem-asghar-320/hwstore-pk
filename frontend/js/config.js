@@ -72,7 +72,7 @@ function formatDate(dateString) {
 }
 
 function getWhatsAppLink(productName, price) {
-  const text = encodeURIComponent(`Hi HW Store, I want to buy ${productName} for Rs.${price}`);
+  const text = encodeURIComponent(`Hi RW Store, I want to buy ${productName} for Rs.${price}`);
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${text}`;
 }
 

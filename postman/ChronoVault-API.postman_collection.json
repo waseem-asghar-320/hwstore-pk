@@ -1,6 +1,6 @@
 {
   "info": {
-    "name": "HW Store API",
+    "name": "RW Store API",
     "description": "REST API collection for Premium Watch Store",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
