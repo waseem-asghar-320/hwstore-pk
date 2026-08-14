@@ -449,7 +449,8 @@ h3 {
 }
 
 .product-stock.in-stock {
-  color: var(--black);
+  color: rgb(0, 167, 0);
+
 }
 
 .product-stock.out-of-stock {

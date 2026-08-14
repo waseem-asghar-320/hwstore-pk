@@ -234,6 +234,7 @@ h2 span,
   align-items: center;
   background: var(--black);
   overflow: hidden;
+  padding-top: var(--fixed-header-offset);
 }
 
 /* .hero-overlay {
@@ -873,7 +874,8 @@ h2 span,
   }
 
   .hero {
-    min-height: auto;
+   
+    /* min-height: auto; */
   }
 
   .hero .container {
