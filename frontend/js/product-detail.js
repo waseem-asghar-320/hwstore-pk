@@ -128,6 +128,18 @@ async function loadProduct() {
 }
 
 function renderProduct(product) {
+  // Meta Pixel - ViewContent
+fbq('track', 'ViewContent', {
+  content_ids: [product._id],
+  content_type: 'product',
+  content_name: product.name,
+  value: Number(
+    product.discountPrice && product.discountPrice < product.price
+      ? product.discountPrice
+      : product.price
+  ),
+  currency: 'PKR'
+});
   const container = document.getElementById('productDetail');
   const rawImages = Array.isArray(product.images) ? product.images : [];
   const images = rawImages
@@ -311,6 +323,14 @@ async function handleOrderSubmit(e) {
     document.getElementById('orderForm').reset();
 
     const order = result.data;
+    // Meta Pixel - Purchase
+fbq('track', 'Purchase', {
+  content_ids: [order.productId || currentProduct._id],
+  content_type: 'product',
+  content_name: order.productName || currentProduct.name,
+  value: Number(order.totalPrice),
+  currency: 'PKR'
+});
     document.getElementById('orderSuccessDetails').innerHTML = `
       <div class="success-details">
         <p><strong>Order ID:</strong> ${order._id}</p>
