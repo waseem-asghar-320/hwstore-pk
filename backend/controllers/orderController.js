@@ -1,8 +1,8 @@
 const Order = require('../models/Order');
 const Product = require('../models/Product');
-// const {
-//   sendNewOrderNotification,
-// } = require('../services/whatsapp');
+ const {
+   sendNewOrderNotification,
+} = require('../services/whatsapp');
 
 const {
   sendNewOrderEmail,
@@ -66,14 +66,14 @@ exports.createOrder = async (req, res) => {
 }
 
     // Send WhatsApp notification
-// try {
-//   await sendNewOrderNotification(order);
-// } catch (whatsappError) {
-//   console.error(
-//     '⚠️ Order saved but WhatsApp notification failed:',
-//     whatsappError.message
-//   );
-// }
+try {
+  await sendNewOrderNotification(order);
+} catch (whatsappError) {
+  console.error(
+    '⚠️ Order saved but WhatsApp notification failed:',
+    whatsappError.message
+  );
+}
 
     res.status(201).json({ success: true, message: 'Order placed successfully', data: order });
   } catch (error) {
