@@ -93,7 +93,8 @@ function renderProducts(products) {
     .map((product) => {
       const imageUrl = getImageUrl(product.images?.[0]);
       const productId = product._id;
-      const hasSale = Boolean(product.discountPrice && Number(product.discountPrice) < Number(product.price));
+      const isOutOfStock = Number(product.stock || 0) <= 0;
+      const hasSale = !isOutOfStock && Boolean(product.discountPrice && Number(product.discountPrice) < Number(product.price));
       const badgeMarkup = hasSale
         ? `<span class="product-sale-badge">${getDiscountBadge(product.price, product.discountPrice)}</span>`
         : '';
@@ -106,15 +107,19 @@ function renderProducts(products) {
     <article class="product-card" data-id="${productId}" role="button" tabindex="0" aria-label="View ${escapeHtml(product.name)}">
       <div class="product-card-image">
         ${badgeMarkup}
+        ${isOutOfStock ? '<span class="product-stock-image-badge">OUT OF STOCK</span>' : ''}
         <img src="${imageUrl}" alt="${escapeHtml(product.name)}" loading="lazy"
           onerror="this.src='https://via.placeholder.com/400x400/111111/888888?text=No+Image'">
       </div>
       <div class="product-card-info">
-        <span class="product-brand">${escapeHtml(product.brand)}</span>
+       <!-- <span class="product-brand">${escapeHtml(product.brand)}</span> -->
         <h3 class="product-name">${escapeHtml(product.name)}</h3>
-        ${ratingMarkup}
+        <!-- ${ratingMarkup} -->
         <div class="product-price">${priceMarkup}</div>
-        ${product.stock <= 0 ? '<span class="product-stock-badge">Out of stock</span>' : ''}
+        <button type="button" class="product-card-cart-button" data-product-id="${productId}" aria-label="Add ${escapeHtml(product.name)} to cart" ${isOutOfStock ? 'disabled' : ''}>
+          <i class="fa-solid fa-cart-plus"></i>
+          <span>${isOutOfStock ? 'OUT OF STOCK' : 'Add to Cart'}</span>
+        </button>
       </div>
     </article>
   `;
@@ -130,6 +135,34 @@ function renderProducts(products) {
         openProduct();
       }
     });
+
+    const addButton = card.querySelector('.product-card-cart-button');
+    if (addButton) {
+      addButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const product = allProducts.find((item) => String(item._id) === String(card.dataset.id));
+        if (!product || Number(product.stock || 0) <= 0) {
+          if (typeof showToast === 'function') showToast('This product is out of stock.', 'error');
+          return;
+        }
+
+        addToCart(product, 1, { selectedColor: '', selectedSize: '' });
+        const buttonText = addButton.querySelector('span');
+        const buttonIcon = addButton.querySelector('i');
+        if (buttonText) {
+          buttonText.textContent = 'Added';
+        }
+        if (buttonIcon) {
+          buttonIcon.className = 'fa-solid fa-check';
+        }
+        setTimeout(() => {
+          if (buttonText) buttonText.textContent = 'Add to Cart';
+          if (buttonIcon) buttonIcon.className = 'fa-solid fa-cart-plus';
+        }, 1000);
+      });
+    }
   });
 }
 

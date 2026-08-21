@@ -12,6 +12,17 @@ async function sendNewOrderNotification(order) {
     }
 
     const orderId = String(order._id).slice(-8).toUpperCase();
+    const orderItems = Array.isArray(order.items) && order.items.length
+      ? order.items
+      : [{
+        name: order.productName || 'N/A',
+        quantity: order.quantity || 1,
+      }];
+    const productSummary = orderItems
+      .map((item) => `${String(item.name || 'N/A').trim()} - Quantity: ${item.quantity || 1}`)
+      .join(' | ');
+    const totalQuantity = orderItems
+      .reduce((total, item) => total + Number(item.quantity || 1), 0);
 
     const message = {
       messaging_product: 'whatsapp',
@@ -40,11 +51,11 @@ async function sendNewOrderNotification(order) {
               },
               {
                 type: 'text',
-                text: order.productName || 'N/A',
+                text: productSummary,
               },
               {
                 type: 'text',
-                text: String(order.quantity || 1),
+                text: String(totalQuantity),
               },
               {
                 type: 'text',
@@ -88,7 +99,7 @@ async function sendNewOrderNotification(order) {
       console.error('WhatsApp API error:', result);
       throw new Error(
         result?.error?.message ||
-          'WhatsApp notification failed'
+        'WhatsApp notification failed'
       );
     }
 

@@ -75,7 +75,7 @@ function filterOrders(orders, filter, statusFilter) {
   // First filter by date
   const config = ORDER_FILTERS[filter] || ORDER_FILTERS.all;
   let filtered = orders;
-  
+
   if (config.days) {
     const threshold = new Date();
     threshold.setDate(threshold.getDate() - config.days);
@@ -175,6 +175,15 @@ function renderOrders(orders, filter = currentFilter, statusFilter = currentStat
   // Build order cards
   const orderCards = filteredOrders.map((order) => {
     const statusClass = getStatusClass(order.orderStatus);
+    const orderItems = Array.isArray(order.items) && order.items.length
+      ? order.items
+      : [{ name: order.productName, quantity: order.quantity, selectedColor: order.color }];
+    const itemSummary = orderItems.map((item) => `
+      <div class="product-detail order-item-detail">
+        <span class="detail-label">Product</span>
+        <span class="detail-value product-name">${escapeHtml(item.name || 'Product')} ×${Number(item.quantity || 1)}${item.selectedColor ? ` · ${escapeHtml(item.selectedColor)}` : ''}</span>
+      </div>
+    `).join('');
     const options = statusOptions
       .map((s) => `<option value="${s}" ${order.orderStatus === s ? 'selected' : ''}>${s}</option>`)
       .join('');
@@ -194,18 +203,7 @@ function renderOrders(orders, filter = currentFilter, statusFilter = currentStat
         
         <div class="order-card-body">
           <div class="order-product-info">
-            <div class="product-detail">
-              <span class="detail-label">Product</span>
-              <span class="detail-value product-name">${order.productName}</span>
-            </div>
-            <div class="product-detail">
-              <span class="detail-label">Quantity</span>
-              <span class="detail-value">×${order.quantity}</span>
-            </div>
-            ${order.color ? `<div class="product-detail">
-              <span class="detail-label">Color</span>
-              <span class="detail-value">${escapeHtml(order.color)}</span>
-            </div>` : ''}
+            ${itemSummary}
             <div class="product-detail">
               <span class="detail-label">Total</span>
               <span class="detail-value order-total">${formatPrice(order.totalPrice)}</span>
@@ -219,12 +217,20 @@ function renderOrders(orders, filter = currentFilter, statusFilter = currentStat
             </div>
             <div class="customer-detail">
               <span class="detail-label">Phone</span>
-              <span class="detail-value">${order.customerPhone}</span>
+              <span class="detail-value">${escapeHtml(order.customerPhone || order.customer?.phone || '')}</span>
+            </div>
+            <div class="customer-detail">
+              <span class="detail-label">City</span>
+              <span class="detail-value">${escapeHtml(order.customer?.city || '')}</span>
             </div>
             <div class="customer-detail full-width">
               <span class="detail-label">Delivery Address</span>
-              <span class="detail-value address">${order.customerAddress}</span>
+              <span class="detail-value address">${escapeHtml(order.customerAddress || order.customer?.address || '')}</span>
             </div>
+            ${order.notes ? `<div class="customer-detail full-width">
+              <span class="detail-label">Note for rider</span>
+              <span class="detail-value address">${escapeHtml(order.notes)}</span>
+            </div>` : ''}
           </div>
         </div>
         
@@ -341,14 +347,14 @@ function escapeHtml(text) {
 function showToast(message, type = 'success') {
   const existing = document.querySelector('.toast');
   if (existing) existing.remove();
-  
+
   const toast = document.createElement('div');
   toast.className = `toast toast-${type}`;
   toast.textContent = message;
   document.body.appendChild(toast);
-  
+
   requestAnimationFrame(() => toast.classList.add('show'));
-  
+
   setTimeout(() => {
     toast.classList.remove('show');
     setTimeout(() => toast.remove(), 300);

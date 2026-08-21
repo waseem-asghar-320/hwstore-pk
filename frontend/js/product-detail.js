@@ -129,17 +129,17 @@ async function loadProduct() {
 
 function renderProduct(product) {
   // Meta Pixel - ViewContent
-fbq('track', 'ViewContent', {
-  content_ids: [product._id],
-  content_type: 'product',
-  content_name: product.name,
-  value: Number(
-    product.discountPrice && product.discountPrice < product.price
-      ? product.discountPrice
-      : product.price
-  ),
-  currency: 'PKR'
-});
+  fbq('track', 'ViewContent', {
+    content_ids: [product._id],
+    content_type: 'product',
+    content_name: product.name,
+    value: Number(
+      product.discountPrice && product.discountPrice < product.price
+        ? product.discountPrice
+        : product.price
+    ),
+    currency: 'PKR'
+  });
   const container = document.getElementById('productDetail');
   const rawImages = Array.isArray(product.images) ? product.images : [];
   const images = rawImages
@@ -193,7 +193,7 @@ fbq('track', 'ViewContent', {
           </div>
         ` : ''}
         <p class="product-stock ${product.stock > 0 ? 'in-stock' : 'out-of-stock'}">
-          ${product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
+          ${product.stock > 0 ? `${product.stock} in stock` : 'OUT OF STOCK'}
         </p>
         <div class="quantity-selector">
           <label for="quantity">Quantity:</label>
@@ -204,11 +204,15 @@ fbq('track', 'ViewContent', {
           </div>
         </div>
         <div class="product-actions">
-          <a href="${getWhatsAppLink(product.name, product.discountPrice && product.discountPrice < product.price ? product.discountPrice : product.price)}" target="_blank" rel="noopener" class="btn btn-primary">
-            Buy on WhatsApp
+          <button class="btn btn-secondary" id="addToCartBtn" ${product.stock <= 0 ? 'disabled' : ''} type="button">
+            <i class="fa-solid fa-cart-plus"></i>
+            ${product.stock <= 0 ? 'OUT OF STOCK' : 'Add to Cart'}
+          </button>
+          <a href="${product.stock <= 0 ? 'javascript:void(0)' : getWhatsAppLink(product.name, product.discountPrice && product.discountPrice < product.price ? product.discountPrice : product.price)}" target="${product.stock <= 0 ? '_self' : '_blank'}" rel="noopener" class="btn btn-primary ${product.stock <= 0 ? 'disabled-link' : ''}" aria-disabled="${product.stock <= 0 ? 'true' : 'false'}" onclick="${product.stock <= 0 ? 'return false;' : ''}">
+            ${product.stock <= 0 ? 'OUT OF STOCK' : 'Buy on WhatsApp'}
           </a>
           <button class="btn btn-secondary" id="codBtn" ${product.stock <= 0 ? 'disabled' : ''}>
-            Place Order (COD)
+            ${product.stock <= 0 ? 'OUT OF STOCK' : 'Place Order (COD)'}
           </button>
         </div>
         
@@ -231,11 +235,26 @@ fbq('track', 'ViewContent', {
   const qtyMinus = document.getElementById('qtyMinus');
   const qtyPlus = document.getElementById('qtyPlus');
   const codBtn = document.getElementById('codBtn');
+  const addToCartBtn = document.getElementById('addToCartBtn');
   const colorChips = document.querySelectorAll('.color-chip');
 
   if (qtyMinus) qtyMinus.addEventListener('click', () => updateQuantity(-1));
   if (qtyPlus) qtyPlus.addEventListener('click', () => updateQuantity(1));
   if (codBtn) codBtn.addEventListener('click', openOrderModal);
+  if (addToCartBtn) {
+    addToCartBtn.addEventListener('click', () => {
+      if (!currentProduct) return;
+      if (Number(currentProduct.stock || 0) <= 0) {
+        if (typeof showToast === 'function') showToast('This product is out of stock.', 'error');
+        return;
+      }
+      const quantity = Number(document.getElementById('quantity')?.value || 1);
+      addToCart(currentProduct, quantity, {
+        selectedColor,
+        selectedSize: '',
+      });
+    });
+  }
 
   if (colorChips.length > 0) {
     colorChips.forEach((chip) => {
@@ -324,13 +343,13 @@ async function handleOrderSubmit(e) {
 
     const order = result.data;
     // Meta Pixel - Purchase
-fbq('track', 'Purchase', {
-  content_ids: [order.productId || currentProduct._id],
-  content_type: 'product',
-  content_name: order.productName || currentProduct.name,
-  value: Number(order.totalPrice),
-  currency: 'PKR'
-});
+    fbq('track', 'Purchase', {
+      content_ids: [order.productId || currentProduct._id],
+      content_type: 'product',
+      content_name: order.productName || currentProduct.name,
+      value: Number(order.totalPrice),
+      currency: 'PKR'
+    });
     document.getElementById('orderSuccessDetails').innerHTML = `
       <div class="success-details">
         <p><strong>Order ID:</strong> ${order._id}</p>

@@ -10,7 +10,7 @@ const transporter = nodemailer.createTransport({
 });
 
 async function sendNewOrderEmail(order) {
-    const customerPhone = String(order.customerPhone || '').replace(/\D/g, '');
+  const customerPhone = String(order.customerPhone || '').replace(/\D/g, '');
 
   let whatsappNumber = customerPhone;
 
@@ -23,6 +23,20 @@ async function sendNewOrderEmail(order) {
 
   const qrCodeDataUrl = await QRCode.toDataURL(whatsappLink);
   const orderId = String(order._id).slice(-8).toUpperCase();
+  const orderItems = Array.isArray(order.items) && order.items.length
+    ? order.items
+    : [{
+      name: order.productName || 'N/A',
+      quantity: order.quantity || 1,
+      selectedColor: order.color || '',
+    }];
+  const productDetails = orderItems.map((item) => `
+    <li>
+      <strong>${item.name || 'N/A'}</strong>
+      <span>Quantity: ${item.quantity || 1}</span>
+      ${item.selectedColor ? `<span>Color: ${item.selectedColor}</span>` : ''}
+    </li>
+  `).join('');
 
   const mailOptions = {
     from: `"RW Store" <${process.env.EMAIL_USER}>`,
@@ -65,9 +79,9 @@ async function sendNewOrderEmail(order) {
 
         <h3>Product Details</h3>
 
-        <p><strong>Product:</strong> ${order.productName || 'N/A'}</p>
-        <p><strong>Quantity:</strong> ${order.quantity || 1}</p>
-        <p><strong>Color:</strong> ${order.color || 'Not specified'}</p>
+        <ul>
+          ${productDetails}
+        </ul>
 
         <h3>Payment</h3>
 
